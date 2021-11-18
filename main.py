@@ -16,10 +16,9 @@ db = firestore.client()
 from price.KrxStockPriceModel import KrxStockPrice
 
 today = datetime.date.today()
-today_str = today.strftime("%Y%m%d")
-yesterday = today - datetime.timedelta(days=1)
-yesterday_str = yesterday.strftime("%Y%m%d")
-target_date = today - datetime.timedelta(days=3)
+
+# Start from 20211109
+target_date = datetime.date(2021, 11, 9)
 limit = today - relativedelta(years=1)
 
 url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
@@ -51,6 +50,7 @@ def download(target_date: datetime.date):
             batch.set(doc_ref.document(res['isu']), res)
         batch.commit()
 print("Downloading..")
+
 while limit < target_date:
     print(target_date.strftime("%Y-%m-%d"))
     download(target_date)
