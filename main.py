@@ -22,10 +22,8 @@ from price.KrxStockPriceModel import KrxStockPrice
 today = datetime.date.today()
 
 # Start from 20211109
-# target_date = datetime.date(2021, 11, 9)
-target_date = datetime.date(2013, 9, 6)
-limit = datetime.date(1995, 5, 2)
-# limit = today - relativedelta(years=1)
+target_date = today
+limit = datetime.date(2021, 11, 17)
 
 url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
 
@@ -34,10 +32,13 @@ def download(target_date: datetime.date):
     data = {'bld': 'dbms/MDC/STAT/standard/MDCSTAT01501', 'mktId': 'ALL', 'trdDd' : target_date_str, 'share' : '1', 'money': '1', "csvxls_isNo": "false"}
     req = requests.post(url, data=data)
     body = req.json()['OutBlock_1']
+    temp_list = []
     if body[0]['TDD_CLSPRC'] != '-':
-        return [KrxStockPrice(target_date_str, r['ISU_SRT_CD'],r['ISU_ABBRV'],r['MKT_NM'],r['SECT_TP_NM'],r['TDD_CLSPRC'],r['CMPPREVDD_PRC'],r['FLUC_RT'],r['TDD_OPNPRC'],r['TDD_HGPRC'],r['TDD_LWPRC'],r['ACC_TRDVOL'],r['ACC_TRDVAL'],r['MKTCAP'],r['LIST_SHRS']) for r in body]
-    else:
-        return []
+        for r in body:
+            if r['TDD_CLSPRC'] != '-':
+                temp_list.append(KrxStockPrice(target_date_str, r['ISU_SRT_CD'],r['ISU_ABBRV'],r['MKT_NM'],r['SECT_TP_NM'],r['TDD_CLSPRC'],r['CMPPREVDD_PRC'],r['FLUC_RT'],r['TDD_OPNPRC'],r['TDD_HGPRC'],r['TDD_LWPRC'],r['ACC_TRDVOL'],r['ACC_TRDVAL'],r['MKTCAP'],r['LIST_SHRS']))
+    return temp_list
+    
 
 def upload_to_firestore(rows: list, target_date: datetime.date):
     target_date_str = target_date.strftime("%Y%m%d")
@@ -104,7 +105,6 @@ async def donwload_local(rows:list[KrxStockPrice]):
         with open('krx/' + rows[0].date + '.json', 'w') as f:
             for r in rows:
                 j = r.to_dict()
-
                 json.dump(j, f, ensure_ascii=False)
     print("file_saved")
 
@@ -119,12 +119,17 @@ conn = psycopg2.connect(
     user="admin",
     password="1234")
 
-while limit < target_date:
-    print(target_date.strftime("%Y-%m-%d"))
-    rows = download(target_date)
-    asyncio.run(save_to_storage(rows, conn))
-    asyncio.run(donwload_local(rows))
-    target_date = target_date - datetime.timedelta(days=1)
+
+rows = download(target_date)
+asyncio.run(save_to_storage(rows, conn))
+asyncio.run(donwload_local(rows))
+
+# while limit < target_date:
+#     print(target_date.strftime("%Y-%m-%d"))
+#     rows = download(target_date)
+#     asyncio.run(save_to_storage(rows, conn))
+#     asyncio.run(donwload_local(rows))
+#     target_date = target_date - datetime.timedelta(days=1)
 
 
 conn.close()
