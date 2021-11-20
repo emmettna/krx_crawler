@@ -21,9 +21,9 @@ from price.KrxStockPriceModel import KrxStockPrice
 
 today = datetime.date.today()
 
-# Start from 20211109
 target_date = today
-limit = datetime.date(2021, 11, 17)
+target_date = datetime.date(2021, 11, 4)
+limit = datetime.date(2021, 10, 1)
 
 url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
 
@@ -111,18 +111,26 @@ async def donwload_local(rows:list[KrxStockPrice]):
 
 # while limit < target_date:
 #     print(target_date.strftime("%Y-%m-%d"))
-    # upload_to_firestore(download(target_date), target_date)
-    # target_date = target_date - datetime.timedelta(days=1)
-conn = psycopg2.connect(
-    host="localhost",
-    database="finance",
-    user="admin",
-    password="1234")
+#     upload_to_firestore(download(target_date), target_date)
+#     target_date = target_date - datetime.timedelta(days=1)
 
+async def daily_job(today: datetime):
+    print("Target date : {}".format(today.strftime("%Y-%m-%d")))
+    conn = psycopg2.connect(
+        host="localhost",
+        database="finance",
+        user="admin",
+        password="1234")
 
-rows = download(target_date)
-asyncio.run(save_to_storage(rows, conn))
-asyncio.run(donwload_local(rows))
+    rows = download(today)
+    task1 = asyncio.create_task(save_to_storage(rows, conn))
+    task2 = asyncio.create_task(donwload_local(rows))
+    task3 = asyncio.create_task(upload_to_firestore(rows, today))
+    await task1
+    await task2
+    await task3
+    conn.close()
+
 
 # while limit < target_date:
 #     print(target_date.strftime("%Y-%m-%d"))
@@ -131,5 +139,5 @@ asyncio.run(donwload_local(rows))
 #     asyncio.run(donwload_local(rows))
 #     target_date = target_date - datetime.timedelta(days=1)
 
-
-conn.close()
+#Daily Job
+asyncio.run(daily_job(today))
