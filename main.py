@@ -28,6 +28,7 @@ url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
 
 def download_stock(target_date: datetime.date):
     target_date_str = target_date.strftime("%Y%m%d")
+    target_date_str_hyphen = target_date.strftime("%Y-%m-%d")
     data = {'bld': 'dbms/MDC/STAT/standard/MDCSTAT01501', 'mktId': 'ALL', 'trdDd' : target_date_str, 'share' : '1', 'money': '1', "csvxls_isNo": "false"}
     req = requests.post(url, data=data)
     body = req.json()['OutBlock_1']
@@ -35,11 +36,12 @@ def download_stock(target_date: datetime.date):
     if body[0]['TDD_CLSPRC'] != '-':
         for r in body:
             if r['TDD_CLSPRC'] != '-':
-                temp_list.append(KrxStockPrice(target_date_str, r['ISU_SRT_CD'],r['ISU_ABBRV'],r['MKT_NM'],r['SECT_TP_NM'],r['TDD_CLSPRC'],r['CMPPREVDD_PRC'],r['FLUC_RT'],r['TDD_OPNPRC'],r['TDD_HGPRC'],r['TDD_LWPRC'],r['ACC_TRDVOL'],r['ACC_TRDVAL'],r['MKTCAP'],r['LIST_SHRS']))
+                temp_list.append(KrxStockPrice(target_date, r['ISU_SRT_CD'],r['ISU_ABBRV'],r['MKT_NM'],r['SECT_TP_NM'],r['TDD_CLSPRC'],r['CMPPREVDD_PRC'],r['FLUC_RT'],r['TDD_OPNPRC'],r['TDD_HGPRC'],r['TDD_LWPRC'],r['ACC_TRDVOL'],r['ACC_TRDVAL'],r['MKTCAP'],r['LIST_SHRS']))
     return temp_list
 
 def download_etf(target_date: datetime.date):
     target_date_str = target_date.strftime("%Y%m%d")
+    target_date_str_hyphen = target_date.strftime("%Y-%m-%d")
     data = {'bld': 'dbms/MDC/STAT/standard/MDCSTAT04301', 'trdDd' : target_date_str, 'share' : '1', 'money': '1', "csvxls_isNo": "false"}
     req = requests.post(url, data=data)
     body = req.json()['output']
@@ -47,7 +49,7 @@ def download_etf(target_date: datetime.date):
     if body[0]['TDD_CLSPRC'] != '-':
         for r in body:
             if r['TDD_CLSPRC'] != '-':
-                temp_list.append(KrxEtfPrice(target_date_str, r['ISU_SRT_CD'], r['ISU_ABBRV'], r['TDD_CLSPRC'], r['CMPPREVDD_PRC'], r['FLUC_RT'], r['NAV'], r['TDD_OPNPRC'], r['TDD_HGPRC'], r['TDD_LWPRC'], r['ACC_TRDVOL'], r['ACC_TRDVAL'], r['MKTCAP'], r['INVSTASST_NETASST_TOTAMT'], r['LIST_SHRS'], r['IDX_IND_NM'], r['OBJ_STKPRC_IDX'], r['CMPPREVDD_IDX'], r['FLUC_RT1']))
+                temp_list.append(KrxEtfPrice(target_date, r['ISU_SRT_CD'], r['ISU_ABBRV'], r['TDD_CLSPRC'], r['CMPPREVDD_PRC'], r['FLUC_RT'], r['NAV'], r['TDD_OPNPRC'], r['TDD_HGPRC'], r['TDD_LWPRC'], r['ACC_TRDVOL'], r['ACC_TRDVAL'], r['MKTCAP'], r['INVSTASST_NETASST_TOTAMT'], r['LIST_SHRS'], r['IDX_IND_NM'], r['OBJ_STKPRC_IDX'], r['CMPPREVDD_IDX'], r['FLUC_RT1']))
     return temp_list
     
 
@@ -78,9 +80,10 @@ async def save_stock_to_database(rows: list[KrxStockPrice], conn):
     cur = conn.cursor()
 
     for r in rows:
+        date = r.date.strftime("%Y-%m-%d")
         cur.execute(
 f"""INSERT INTO "korean_stock" (id, date, isu, name, market, sector, end_price, change_price, change_rate, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, number_of_share)
-VALUES ('{r.date +'-'+r.isu}', '{r.date}', '{r.isu}','{r.name}','{r.market}','{r.sector}',{r.end_price},{r.change_price},{r.change_rate},{r.start_price},{r.highest_price},{r.lowest_price},{r.trade_volume},{r.trade_amount},{r.market_cap},{r.number_of_share})
+VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}','{r.name}','{r.market}','{r.sector}',{r.end_price},{r.change_price},{r.change_rate},{r.start_price},{r.highest_price},{r.lowest_price},{r.trade_volume},{r.trade_amount},{r.market_cap},{r.number_of_share})
 ON CONFLICT (id) DO NOTHING""")
     conn.commit()
 
@@ -88,23 +91,24 @@ async def save_eft_to_database(rows: list[KrxEtfPrice], conn):
     cur = conn.cursor()
 
     for r in rows:
+        date = r.date.strftime("%Y-%m-%d")
         cur.execute(
 f"""INSERT INTO "korean_etf" (id, date, isu, name, end_price, change_price, change_rate, net_value, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, net_cap_value, number_of_share, base_index_name, base_index_end_point, base_index_change_point, base_index_change_rate)
-VALUES ('{r.date +'-'+r.isu}', '{r.date}', '{r.isu}', '{r.name}', '{r.end_price}', '{r.change_price}', '{r.change_rate}', '{r.net_value}', '{r.start_price}', '{r.highest_price}', '{r.lowest_price}', '{r.trade_volume}', '{r.trade_amount}', '{r.market_cap}', '{r.net_cap_value}', '{r.number_of_share}', '{r.base_index_name}', '{r.base_index_end_point}', '{r.base_index_change_point}', '{r.base_index_change_rate}')
+VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}', '{r.name}', '{r.end_price}', '{r.change_price}', '{r.change_rate}', '{r.net_value}', '{r.start_price}', '{r.highest_price}', '{r.lowest_price}', '{r.trade_volume}', '{r.trade_amount}', '{r.market_cap}', '{r.net_cap_value}', '{r.number_of_share}', '{r.base_index_name}', '{r.base_index_end_point}', '{r.base_index_change_point}', '{r.base_index_change_rate}')
 ON CONFLICT (id) DO NOTHING""")
     conn.commit()
 
 
 async def donwload_stock_local(rows:list[KrxStockPrice]):
     if len(rows) != 0:
-        with open('krx/stock/' + rows[0].date + '.json', 'w') as f:
+        with open('krx/stock/' + rows[0].date.strftime("%Y-%m-%d")  + '.json', 'w') as f:
             for r in rows:
                 j = r.to_dict()
                 json.dump(j, f, ensure_ascii=False)
 
 async def donwload_etf_local(rows:list[KrxEtfPrice]):
     if len(rows) != 0:
-        with open('krx/etf/' + rows[0].date + '.json', 'w') as f:
+        with open('krx/etf/' + rows[0].date.strftime("%Y-%m-%d") + '.json', 'w') as f:
             json.dump([r.to_dict() for r in rows], f, ensure_ascii=False)
 
 
@@ -112,7 +116,7 @@ async def save_to_elasticsearch(rows: list, index:str, client):
     if len(rows) > 0:
         body = []
         for entry in rows:
-            body.append({'index': {'_index': index, '_id' : entry.date +'-'+ entry.isu}})
+            body.append({'index': {'_index': index, '_id' : entry.date.strftime("%Y-%m-%d") +'-'+ entry.isu}})
             body.append(entry.to_dict())
         client.bulk(body=body)
 
