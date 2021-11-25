@@ -5,8 +5,8 @@ class PostgreSQL:
     def __init__(self) -> None:
         pass
 
-    def get_connection(host, database, user, password):
-        return psycopg2.connect(host=host, database=database, user=user, password=password)
+    def get_connection(host, port, database, user, password):
+        return psycopg2.connect(host=host, database=database, user=user, password=password, port=port)
 
     async def save_stock_to_database(rows: list[KrxStockPrice], conn):    
         cur = conn.cursor()

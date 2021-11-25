@@ -42,7 +42,7 @@ def main():
     if args.postgres:
         pd_conf = conf['PostgreSQL']
         pg_client = PostgreSQL
-        pg_conn = PostgreSQL.get_connection(host=pd_conf['host'], database=pd_conf['db'], user=pd_conf['user'], password=pd_conf['password'])
+        pg_conn = PostgreSQL.get_connection(host=pd_conf['host'], port=pd_conf['port'], database=pd_conf['db'], user=pd_conf['user'], password=pd_conf['password'])
     else: 
         pg_client = None
         pg_conn = None
