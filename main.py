@@ -1,167 +1,83 @@
-import requests
+
 import datetime
-from dateutil.relativedelta import relativedelta
-from elasticsearch import Elasticsearch
-
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-import psycopg2
 import asyncio
-import json 
+import sys, getopt
 
-firebase_config_path = 'firebase_config.json'
+from price.model.KrxPriceModel import *
+from price.client.ElasticSearchClient import *
+from price.client.PostgreSQLClient import *
+from price.client.FirebaseClient import * 
+from price.client.LocalStorageClient import *
+from price.Crawler import *
+import configparser
 
-cred = credentials.Certificate(firebase_config_path)
-firebase_admin.initialize_app(cred)
 
-db = firestore.client()
+def main(arg):
+    conf = configparser.SafeConfigParser()
+    conf.read('config.ini')
+    conf.sections()
 
-from price.KrxPriceModel import *
-
-today = datetime.date.today()
-
-target_date = today
-limit = datetime.date(1995, 5, 3)
-
-url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
-
-def download_stock(target_date: datetime.date):
-    target_date_str = target_date.strftime("%Y%m%d")
-    target_date_str_hyphen = target_date.strftime("%Y-%m-%d")
-    data = {'bld': 'dbms/MDC/STAT/standard/MDCSTAT01501', 'mktId': 'ALL', 'trdDd' : target_date_str, 'share' : '1', 'money': '1', "csvxls_isNo": "false"}
-    req = requests.post(url, data=data)
-    body = req.json()['OutBlock_1']
-    temp_list = []
-    if body[0]['TDD_CLSPRC'] != '-':
-        for r in body:
-            if r['TDD_CLSPRC'] != '-':
-                temp_list.append(KrxStockPrice(target_date, r['ISU_SRT_CD'],r['ISU_ABBRV'],r['MKT_NM'],r['SECT_TP_NM'],r['TDD_CLSPRC'],r['CMPPREVDD_PRC'],r['FLUC_RT'],r['TDD_OPNPRC'],r['TDD_HGPRC'],r['TDD_LWPRC'],r['ACC_TRDVOL'],r['ACC_TRDVAL'],r['MKTCAP'],r['LIST_SHRS']))
-    return temp_list
-
-def download_etf(target_date: datetime.date):
-    target_date_str = target_date.strftime("%Y%m%d")
-    target_date_str_hyphen = target_date.strftime("%Y-%m-%d")
-    data = {'bld': 'dbms/MDC/STAT/standard/MDCSTAT04301', 'trdDd' : target_date_str, 'share' : '1', 'money': '1', "csvxls_isNo": "false"}
-    req = requests.post(url, data=data)
-    body = req.json()['output']
-    temp_list = []
-    if body[0]['TDD_CLSPRC'] != '-':
-        for r in body:
-            if r['TDD_CLSPRC'] != '-':
-                temp_list.append(KrxEtfPrice(target_date, r['ISU_SRT_CD'], r['ISU_ABBRV'], r['TDD_CLSPRC'], r['CMPPREVDD_PRC'], r['FLUC_RT'], r['NAV'], r['TDD_OPNPRC'], r['TDD_HGPRC'], r['TDD_LWPRC'], r['ACC_TRDVOL'], r['ACC_TRDVAL'], r['MKTCAP'], r['INVSTASST_NETASST_TOTAMT'], r['LIST_SHRS'], r['IDX_IND_NM'], r['OBJ_STKPRC_IDX'], r['CMPPREVDD_IDX'], r['FLUC_RT1']))
-    return temp_list
+    opts, etc_args = getopt.getopt(arg[1:], "hi:c:", ["help","instance=","channel="])
     
+    if "--local" in etc_args: local_storage = True 
+    else: local_storage = None
+    
+    if "--postgres" in etc_args:
+        pd_conf = conf['PostgreSQL']
+        pg_client = PostgreSQL
+        pg_conn = PostgreSQL.get_connection(host=pd_conf['host'], database=pd_conf['db'], user=pd_conf['user'], password=pd_conf['password'])
+        
+    else: 
+        pg_client = None
+        pg_conn = None
 
-async def upload_to_firestore(rows: list, target_date: datetime.date):
-    target_date_str = target_date.strftime("%Y%m%d")
-    #Group 500 each
-    split_count = 0
-    row_list = []
-    while len(rows) > 500:
-        split_count += 1
-        row_list.append(rows[:500])
-        rows = rows[500:]
-    row_list.append(rows)
+    if "--elasitcsearch" in etc_args: es_client = ElasticSearch().get_client([conf['ElasticSearch']])
+    else: etc_args = None
+    
+    if "--firestore" in etc_args: firestore_client = Firebase().getClient()
+    else: firestore_client = None
+    
+    today = datetime.date.today()
+    target_date = today
+    for (opt, argument) in opts:
+        if "--target-date" == opt:
+            target_date = datetime.datetime.fromisoformat(argument)
+        elif "--from" == opt:
+            target_date = datetime.datetime.fromisoformat(argument)
+        elif "--to" == opt:
+            limit = datetime.datetime.fromisoformat(argument)
 
-    doc_ref = db.collection("stock").document("price").collection(target_date_str)
+    try:
+        if target_date == today:
+            asyncio.run(daily_job(target_date, local_storage, firestore_client, es_client, pg_client, pg_conn))
+        else:
+            asyncio.run(run_in_range(target_date, limit, local_storage, firestore_client, es_client, pg_client, pg_conn))
+    except Exception as e:
+        print(f"Error %{e}")
+    finally:
+        if pg_conn != None: pg_conn.close()
+        if es_client != None: es_client.close()
 
-    batch = db.batch()
-
-    for group in row_list:
-        for r in group:
-            res = r.to_dict()
-            batch.set(doc_ref.document(res['isu']), res)
-        batch.commit()
-print("Downloading..")
-
-
-async def save_stock_to_database(rows: list[KrxStockPrice], conn):    
-    cur = conn.cursor()
-
-    for r in rows:
-        date = r.date.strftime("%Y-%m-%d")
-        cur.execute(
-f"""INSERT INTO "korean_stock" (id, date, isu, name, market, sector, end_price, change_price, change_rate, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, number_of_share)
-VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}','{r.name}','{r.market}','{r.sector}',{r.end_price},{r.change_price},{r.change_rate},{r.start_price},{r.highest_price},{r.lowest_price},{r.trade_volume},{r.trade_amount},{r.market_cap},{r.number_of_share})
-ON CONFLICT (id) DO NOTHING""")
-    conn.commit()
-
-async def save_eft_to_database(rows: list[KrxEtfPrice], conn):    
-    cur = conn.cursor()
-
-    for r in rows:
-        date = r.date.strftime("%Y-%m-%d")
-        cur.execute(
-f"""INSERT INTO "korean_etf" (id, date, isu, name, end_price, change_price, change_rate, net_value, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, net_cap_value, number_of_share, base_index_name, base_index_end_point, base_index_change_point, base_index_change_rate)
-VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}', '{r.name}', '{r.end_price}', '{r.change_price}', '{r.change_rate}', '{r.net_value}', '{r.start_price}', '{r.highest_price}', '{r.lowest_price}', '{r.trade_volume}', '{r.trade_amount}', '{r.market_cap}', '{r.net_cap_value}', '{r.number_of_share}', '{r.base_index_name}', '{r.base_index_end_point}', '{r.base_index_change_point}', '{r.base_index_change_rate}')
-ON CONFLICT (id) DO NOTHING""")
-    conn.commit()
+if __name__ == '__main__':
+    main(sys.argv)
 
 
-async def donwload_stock_local(rows:list[KrxStockPrice]):
-    if len(rows) != 0:
-        with open('krx/stock/' + rows[0].date.strftime("%Y-%m-%d")  + '.json', 'w') as f:
-            for r in rows:
-                j = r.to_dict()
-                json.dump(j, f, ensure_ascii=False)
+async def run_in_range(from_date: datetime, to_date:datetime, local_storage, firestore_client, es_client, pg_client, pg_conn):
+    target_date = from_date
+    while target_date <= to_date:
+        daily_job(target_date, local_storage, firestore_client, es_client, pg_client, pg_conn)
+        target_date = target_date + datetime.timedelta(days=1)
 
-async def donwload_etf_local(rows:list[KrxEtfPrice]):
-    if len(rows) != 0:
-        with open('krx/etf/' + rows[0].date.strftime("%Y-%m-%d") + '.json', 'w') as f:
-            json.dump([r.to_dict() for r in rows], f, ensure_ascii=False)
-
-
-async def save_to_elasticsearch(rows: list, index:str, client):
-    if len(rows) > 0:
-        body = []
-        for entry in rows:
-            body.append({'index': {'_index': index, '_id' : entry.date.strftime("%Y-%m-%d") +'-'+ entry.isu}})
-            body.append(entry.to_dict())
-        client.bulk(body=body)
-
-
-# while limit < target_date:
-#     print(target_date.strftime("%Y-%m-%d"))
-#     upload_to_firestore(download(target_date), target_date)
-#     target_date = target_date - datetime.timedelta(days=1)
-
-async def daily_job(today: datetime, conn, es_client):
+async def daily_job(today: datetime, local_storage, firestore_client, es_client, pg_client, pg_conn):
     print("Target date : {}".format(today.strftime("%Y-%m-%d")))
 
     stock_rows = download_stock(today)
-    task1 = asyncio.create_task(save_stock_to_database(stock_rows, conn))
-    task2 = asyncio.create_task(save_to_elasticsearch(stock_rows, 'stock', es_client))
-    task3 = asyncio.create_task(donwload_stock_local(stock_rows))
-    task4 = asyncio.create_task(upload_to_firestore(stock_rows, today))
-    # if today > datetime.date(2002, 10, 13):
+    if (pg_client != None): await asyncio.create_task(pg_client.save_stock_to_database(stock_rows, pg_conn))
+    if (es_client != None): await asyncio.create_task(es_client.save_to_elasticsearch(stock_rows, 'stock', es_client))
+    if (local_storage != None): await asyncio.create_task(local_storage.donwload_stock_local(stock_rows, 'krx/stock'))
+    if(firestore_client != None): await asyncio.create_task(firestore_client.upload_to_firestore(stock_rows, today))
+
     etf_rows = download_etf(today)
-    task5 = asyncio.create_task(save_eft_to_database(etf_rows, conn))
-    task6 = asyncio.create_task(donwload_etf_local(etf_rows))
-    task7 = asyncio.create_task(save_to_elasticsearch(etf_rows, 'etf', es_client))
-    await task5
-    await task6
-    await task7
-    await task1
-    await task2
-    await task3
-    await task4
-
-conn = psycopg2.connect(
-    host="localhost",
-    database="finance",
-    user="admin",
-    password="1234")
-
-es_client = Elasticsearch(['localhost:9200'])
-
-#Daily Job
-asyncio.run(daily_job(today, conn, es_client))
-
-# while limit <= target_date:
-#     asyncio.run(daily_job(target_date, conn, es_client))
-#     target_date = target_date - datetime.timedelta(days=1)
-
-conn.close()
-es_client.close()
-print("Finished")
+    if(pg_client != None): await asyncio.create_task(pg_client.save_eft_to_database(etf_rows, pg_conn))
+    if(es_client != None): await asyncio.create_task(es_client.save_to_elasticsearch(etf_rows, 'etf', es_client))
+    if(local_storage != None): await asyncio.create_task(local_storage.donwload_etf_local(etf_rows, 'krx/etf'))
