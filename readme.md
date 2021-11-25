@@ -9,7 +9,9 @@
     - LocalStorage
 
 ## How to use
-- Either download as list or save
+1. Install requirements
+2. If youl'd like to use Postgres, MAKE SURE to create database and tables using `V000*.sql` in root directory
+3. Just to crawl or To save
 
 ### Just Crawl And Return In List
 ```python3 
