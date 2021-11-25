@@ -6,7 +6,7 @@ import datetime
 # TODO handle this
 firebase_config_path = 'firebase_config.json'
 
-class Firebase():
+class Firestore():
     def __init__(self) -> None:
         pass
 

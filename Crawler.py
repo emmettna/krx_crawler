@@ -21,7 +21,7 @@ def download_stock(target_date: datetime.date) -> list:
         return []
 
 def download_etf(target_date: datetime.date) -> list:
-    if (target_date >= datetime.date(2002, 10, 13)):
+    if (target_date >= datetime.date(2002, 10, 13) ):
         target_date_str = target_date.strftime("%Y%m%d")
         payload = {'bld': 'dbms/MDC/STAT/standard/MDCSTAT04301', 'trdDd' : target_date_str, 'share' : '1', 'money': '1', "csvxls_isNo": "false"}
         req = requests.post(url, data=payload)
