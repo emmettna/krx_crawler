@@ -1,4 +1,4 @@
-from price.model.KrxPriceModel import *
+from model.KrxPriceModel import *
 import psycopg2
 
 class PostgreSQL:

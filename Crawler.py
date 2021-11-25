@@ -1,6 +1,6 @@
 import datetime
 import requests
-from price.model.KrxPriceModel import *
+from model.KrxPriceModel import *
 
 url = "http://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
 

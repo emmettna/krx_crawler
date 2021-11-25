@@ -1,12 +1,12 @@
 import datetime
 import asyncio
 
-from price.model.KrxPriceModel import *
-from price.client.ElasticSearchClient import *
-from price.client.PostgreSQLClient import *
-from price.client.FirestoreClient import * 
-from price.client.LocalStorageClient import *
-from price.Crawler import *
+from model.KrxPriceModel import *
+from client.ElasticSearchClient import *
+from client.PostgreSQLClient import *
+from client.FirestoreClient import * 
+from client.LocalStorageClient import *
+from Crawler import *
 import configparser
 import argparse
 
