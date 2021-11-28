@@ -13,6 +13,5 @@ async def save_to_local(rows:list, parent_dir_path: str, name_post_fix: str = ''
     if len(rows) != 0:
         if name_post_fix != '':
             name_post_fix = '-'+name_post_fix
-        # with open('krx/stock/' + rows[0].date.strftime("%Y-%m-%d")  + '.json', 'w') as f:
         with open(parent_dir_path + '/' + rows[0].date.strftime("%Y-%m-%d") + name_post_fix + '.json', 'w') as f:
             json.dump([r.to_dict() for r in rows], f, ensure_ascii=False)

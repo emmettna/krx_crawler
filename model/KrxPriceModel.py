@@ -27,7 +27,6 @@ market_cap: {self.market_cap}, number_of_share: {self.number_of_share})"""
         return {'date': self.date.strftime("%Y-%m-%d"), 'isu': self.isu,'name': self.name,'market': self.market,'sector': self.sector,'end_price': self.end_price,'change_price': self.change_price,'change_rate': self.change_rate,'start_price': self.start_price,'highest_price': self.highest_price,'lowest_price': self.lowest_price,'trade_volume': self.trade_volume,'trade_amount': self.trade_amount,'market_cap': self.market_cap,'number_of_share': self.number_of_share}
 
 class KrxEtfPrice:
-    # [("isu", "ISU_SRT_CD"), ("name", "ISU_ABBRV"), ("end_price", "TDD_CLSPRC"), ("change_price", "CMPREVDD_PRC"), ("change_rate", "FLUC_RT"), ("net_value", "NAV"), ("start_price", "TDD_OPNPRC"), ("highest_price", "TDD_HGPRC"), ("lowest_price", "TDDLWPRC"), ("trade_volume", "ACC_TRDVOL"), ("trade_amount", "ACC_TRDVAL"), ("market_cap", "MKTCAP"), ("net_cap_value", "INVSTASST_NETASST_TOTAMT"), ("number_of_share", "LIST_SHRS"), ("base_index_name", "IDX_IND_NM"), ("base_index_end_point", "OBJ_STKPRC_IDX"), ("base_index_change_point", "CMPPREVDD_IDX"), ("base_index_change_rate", "FLUC_RT")]
     def __init__(self, date, isu, name, end_price, change_price, change_rate, net_value, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, net_cap_value, number_of_share, base_index_name, base_index_end_point, base_index_change_point, base_index_change_rate):
         self.isu = isu
         self.date = date
