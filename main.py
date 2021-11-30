@@ -74,18 +74,22 @@ def main():
             daily_job(target_date, local_storage, firestore_client, es_client, pg_client, pg_conn)
             target_date = target_date + datetime.timedelta(days=1)
 
-    async def daily_job(today: datetime, local_storage, firestore_client, es_client, pg_client, pg_conn):
+    async def daily_job(today: datetime, local_storage, firestore_client, es_client: ElasticSearch, pg_client: PostgreSQL, pg_conn):
         print("Target date : {}".format(today.strftime("%Y-%m-%d")))
 
-        stock_rows = download_stock(today)
-        if (pg_client != None): await asyncio.create_task(pg_client.save_stock_to_database(stock_rows, pg_conn))
-        if (es_client != None): await asyncio.create_task(ElasticSearch.save_to_elasticsearch(stock_rows, 'stock', es_client))
-        if (local_storage): await asyncio.create_task(save_to_local(stock_rows, local_download_parent_dir + '/stock'))
-        if(firestore_client != None): await asyncio.create_task(Firestore.upload_to_firestore(stock_rows, today, firestore_client))
-        etf_rows = download_etf(today)
-        if(pg_client != None): await asyncio.create_task(pg_client.save_eft_to_database(etf_rows, pg_conn))
-        if(es_client != None): await asyncio.create_task(ElasticSearch.save_to_elasticsearch(etf_rows, 'etf', es_client))
-        if(local_storage): await asyncio.create_task(save_to_local(etf_rows, local_download_parent_dir + '/etf'))
+        # stock_rows = download_stock(today)
+        # if (pg_client != None): await asyncio.create_task(pg_client.save_stock_to_database(stock_rows, pg_conn))
+        # if (es_client != None): await asyncio.create_task(ElasticSearch.save_to_elasticsearch(stock_rows, 'stock', es_client))
+        # if (local_storage): await asyncio.create_task(save_to_local(stock_rows, local_download_parent_dir + '/stock'))
+        # if(firestore_client != None): await asyncio.create_task(Firestore.upload_to_firestore(stock_rows, today, firestore_client))
+        
+        stock_base_values_rows = download_stock_base_values(today)
+        if (pg_client != None): await asyncio.create_task(pg_client.save_stock_base_values(stock_base_values_rows, pg_conn))
+
+        # etf_rows = download_etf(today)
+        # if(pg_client != None): await asyncio.create_task(pg_client.save_eft_to_database(etf_rows, pg_conn))
+        # if(es_client != None): await asyncio.create_task(ElasticSearch.save_to_elasticsearch(etf_rows, 'etf', es_client))
+        # if(local_storage): await asyncio.create_task(save_to_local(etf_rows, local_download_parent_dir + '/etf'))
 
     try:
         if limit != None:

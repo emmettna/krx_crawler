@@ -35,3 +35,18 @@ def download_etf(target_date: datetime.date) -> list:
     else:
         print("[Info] Krx ETF data is from 2002-October-13")
         return []
+
+
+def download_stock_base_values(target_date: datetime.date)-> str:
+    if(target_date >= datetime.date(2000, 1, 4)):
+        target_date_str = target_date.strftime("%Y%m%d")
+        payload = {'bld': 'dbms/MDC/STAT/standard/MDCSTAT03501', 'mktId': 'ALL', 'trdDd' : target_date_str, 'searchType' : '1', "csvxls_isNo": "false"}
+        req = requests.post(url, data=payload)
+        body = req.json()['output']
+        temp_list = []
+        for r in body:
+            temp_list.append(KrxStockBaseValues(target_date, r['ISU_SRT_CD'],r['ISU_ABBRV'],r['TDD_CLSPRC'],r['EPS'],r['PER'],r['FWD_EPS'],r['FWD_PER'],r['BPS'],r['PBR'],r['DPS'],r['DVD_YLD']))
+        return temp_list
+    else:
+        print("[Info] Krx stock data is from 2000-Jan-4")
+        return []

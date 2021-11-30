@@ -20,6 +20,25 @@ CREATE TABLE IF NOT EXISTS "korean_stock"
     created_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS "korean_stock_base_value"
+(
+    id                   TEXT        PRIMARY KEY,
+    date                 DATE        NOT NULL,
+    isu                  TEXT        NOT NULL,
+    name                 TEXT        NOT NULL,
+    end_price            BIGINT      NOT NULL,
+    eps                  BIGINT      NOT NULL,
+    per                  REAL        NOT NULL,
+    forward_eps          BIGINT      NOT NULL,
+    forward_per          REAL        NOT NULL,
+    bps                  BIGINT      NOT NULL,
+    pbr                  REAL        NOT NULL,
+    dps                  BIGINT      NOT NULL,
+    dividen_yield        REAL        NOT NULL,
+    updated_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    created_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "korean_etf"
 (
     id                      TEXT        PRIMARY KEY,
