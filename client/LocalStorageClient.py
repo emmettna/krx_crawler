@@ -9,7 +9,7 @@ parent_dir='krx/'
 # File name ex: 
 # - without postfix: ./2021-11-01.json
 # - with postfix:    ./2021-11-01-some_post_fix_name.json
-async def save_to_local(rows:list, parent_dir_path: str, name_post_fix: str = ''):
+async def save(rows:list, parent_dir_path: str, name_post_fix: str = ''):
     if len(rows) != 0:
         if name_post_fix != '':
             name_post_fix = '-'+name_post_fix

@@ -9,7 +9,7 @@ class PostgreSQL:
     def get_connection(host, port, database, user, password):
         return psycopg2.connect(host=host, database=database, user=user, password=password, port=port)
 
-    async def save_stock_to_database(rows: list[KrxStockPrice], conn):    
+    async def save_stock(rows: list[KrxStockPrice], conn):    
         cur = conn.cursor()
 
         for r in rows:
@@ -20,7 +20,7 @@ VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}','{r.name}','{r.market}','{r.sec
 ON CONFLICT (id) DO NOTHING""")
         conn.commit()
 
-    async def save_eft_to_database(rows: list[KrxEtfPrice], conn):    
+    async def save_eft(rows: list[KrxEtfPrice], conn):    
         cur = conn.cursor()
 
         for r in rows:

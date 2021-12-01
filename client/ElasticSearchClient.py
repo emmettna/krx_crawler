@@ -7,7 +7,7 @@ class ElasticSearch:
     def get_client(config):
         return Elasticsearch(config)
 
-    async def save_to_elasticsearch(rows: list, index:str, client):
+    async def save(rows: list, index:str, client):
         if len(rows) > 0:
             body = []
             for entry in rows:
