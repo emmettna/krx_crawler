@@ -28,7 +28,7 @@ def main():
     argumentParser.add_argument('--to_date', type=str)
     args = argumentParser.parse_args()
 
-    if args.all:
+    if args.all | (not (args.local | args.postgres | args.elasticsearch | args.firestore)):
         args.postgres = True
         args.elasticsearch = True
         args.firestore = True
