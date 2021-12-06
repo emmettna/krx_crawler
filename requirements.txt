@@ -1,7 +1,6 @@
-requests
-psycopg2
-requests
-configparser
-argparse
-firebase_admin
-elasticsearch
+requests==2.26.0
+psycopg2-binary==2.9.2
+#configparser
+argparse==1.4.0
+firebase_admin==5.1.0
+elasticsearch7==7.15.2
