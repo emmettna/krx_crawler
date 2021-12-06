@@ -9,7 +9,7 @@ class PostgreSQL:
     def get_connection(host, port, database, user, password):
         return psycopg2.connect(host=host, database=database, user=user, password=password, port=port)
 
-    async def save_stock(rows: list[KrxStockPrice], conn):    
+    async def save_stock(rows, conn):    
         cur = conn.cursor()
 
         for r in rows:
@@ -20,7 +20,7 @@ VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}','{r.name}','{r.market}','{r.sec
 ON CONFLICT (id) DO NOTHING""")
         conn.commit()
 
-    async def save_eft(rows: list[KrxEtfPrice], conn):    
+    async def save_eft(rows, conn):    
         cur = conn.cursor()
 
         for r in rows:
@@ -31,7 +31,7 @@ VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}', '{r.name}', '{r.end_price}', '
 ON CONFLICT (id) DO NOTHING""")
         conn.commit()
 
-    async def save_stock_base_values(rows: list[KrxStockBaseValues], conn) -> None:
+    async def save_stock_base_values(rows, conn) -> None:
         cur = conn.cursor()
         params = [(r.get_unique_id(), r.date, r.isu, r.name, r.end_price, r.eps, r.per, r.forward_eps, r.forward_per, r.bps, r.pbr, r.dps, r.dividen_yield) for r in rows]
         execute_values(cur, """INSERT INTO "korean_stock_base_value" (id, date, isu, name, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividen_yield) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
