@@ -3,3 +3,4 @@ __pycache__/
 firebase_config.json
 krx/
 .DS_Store
+/base
