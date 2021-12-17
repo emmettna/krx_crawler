@@ -1,10 +1,10 @@
 class KrxStockPrice:
     def __init__(self, date, isu, name, market, sector, end_price, change_price, change_rate, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, number_of_share):
-        self.isu = isu
-        self.name = name
+        self.isu = isu.strip()
+        self.name = name.strip()
         self.date = date
-        self.market = market
-        self.sector = sector
+        self.market = market.strip()
+        self.sector = sector.strip()
         self.end_price = int(end_price.replace(",", ""))
         self.change_price = int(change_price.replace(",", ""))
         self.change_rate = float(change_rate.replace(",", ""))
@@ -30,8 +30,8 @@ market_cap: {self.market_cap}, number_of_share: {self.number_of_share})"""
 class KrxStockBaseValues:
     def __init__(self, date, isu, name, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividen_yield) -> None:
         self.date = date
-        self.isu = isu
-        self.name = name
+        self.isu = isu.strip()
+        self.name = name.strip()
         self.end_price = int(end_price.replace(",", "").replace("-", "0"))
         self.eps = int(eps.replace(",", "").replace("-", "0"))
         self.per = float(per.replace(",", "").replace("-", "0"))
@@ -49,9 +49,9 @@ class KrxStockBaseValues:
 
 class KrxEtfPrice:
     def __init__(self, date, isu, name, end_price, change_price, change_rate, net_value, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, net_cap_value, number_of_share, base_index_name, base_index_end_point, base_index_change_point, base_index_change_rate):
-        self.isu = isu
+        self.isu = isu.strip()
         self.date = date
-        self.name = name
+        self.name = name.strip()
         self.end_price = int(end_price.replace(",", ""))
         self.change_price = int(change_price.replace(",", "")) if change_price != '-' else 0
         self.change_rate = float(change_rate.replace(",", "")) if change_rate != '-' else float("0.00")

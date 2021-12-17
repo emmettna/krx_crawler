@@ -65,13 +65,13 @@ def main():
         target_date = datetime.datetime.fromisoformat(args.target_date).date()
     elif args.from_date != None:
         target_date = datetime.datetime.fromisoformat(args.from_date).date()
-    elif args.to_date != None:
+    if args.to_date != None:
         limit = datetime.datetime.fromisoformat(args.to_date).date()
 
     async def run_in_range(from_date: datetime, to_date: datetime, local_storage, firestore_client, es_client, pg_client, pg_conn):
         target_date = from_date
         while target_date <= to_date:
-            daily_job(target_date, local_storage, firestore_client, es_client, pg_client, pg_conn)
+            await daily_job(target_date, local_storage, firestore_client, es_client, pg_client, pg_conn)
             target_date = target_date + datetime.timedelta(days=1)
 
     async def daily_job(today: datetime, local_storage, firestore_client, es_client: ElasticSearch, pg_client: PostgreSQL, pg_conn):
