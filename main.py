@@ -61,11 +61,12 @@ def main():
     
     target_date = today
     limit = None
+    print(args)
     if args.target_date != None:
         target_date = datetime.datetime.fromisoformat(args.target_date).date()
-    elif args.start_date != None:
+    elif args.start_date is not None:
         target_date = datetime.datetime.fromisoformat(args.start_date).date()
-    if args.end_date != None:
+    if args.end_date is not None:
         limit = datetime.datetime.fromisoformat(args.end_date).date()
 
     async def run_in_range(start_date: datetime, end_date: datetime, local_storage, firestore_client, es_client, pg_client, pg_conn):
