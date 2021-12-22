@@ -24,8 +24,8 @@ def main():
     argumentParser.add_argument('--elasticsearch', type=str,  nargs="?", const=True, default=False)
     argumentParser.add_argument('--firestore', type=str, nargs="?", const=True, default=False)
     argumentParser.add_argument('--target_date', type=str)
-    argumentParser.add_argument('--from_date', type=str)
-    argumentParser.add_argument('--to_date', type=str)
+    argumentParser.add_argument('--start_date', type=str)
+    argumentParser.add_argument('--end_date', type=str)
     args = argumentParser.parse_args()
 
     if args.all | (not (args.local | args.postgres | args.elasticsearch | args.firestore)):
@@ -63,14 +63,14 @@ def main():
     limit = None
     if args.target_date != None:
         target_date = datetime.datetime.fromisoformat(args.target_date).date()
-    elif args.from_date != None:
-        target_date = datetime.datetime.fromisoformat(args.from_date).date()
-    if args.to_date != None:
-        limit = datetime.datetime.fromisoformat(args.to_date).date()
+    elif args.start_date != None:
+        target_date = datetime.datetime.fromisoformat(args.start_date).date()
+    if args.end_date != None:
+        limit = datetime.datetime.fromisoformat(args.end_date).date()
 
-    async def run_in_range(from_date: datetime, to_date: datetime, local_storage, firestore_client, es_client, pg_client, pg_conn):
-        target_date = from_date
-        while target_date <= to_date:
+    async def run_in_range(start_date: datetime, end_date: datetime, local_storage, firestore_client, es_client, pg_client, pg_conn):
+        target_date = start_date
+        while target_date <= end_date:
             await daily_job(target_date, local_storage, firestore_client, es_client, pg_client, pg_conn)
             target_date = target_date + datetime.timedelta(days=1)
 
