@@ -28,7 +28,7 @@ market_cap: {self.market_cap}, number_of_share: {self.number_of_share})"""
 
 
 class KrxStockBaseValues:
-    def __init__(self, date, isu, name, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividen_yield) -> None:
+    def __init__(self, date, isu, name, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividend_yield) -> None:
         self.date = date
         self.isu = isu.strip()
         self.name = name.strip()
@@ -40,12 +40,12 @@ class KrxStockBaseValues:
         self.bps = int(bps.replace(",", "").replace("-", "0"))
         self.pbr = float(pbr.replace(",", "").replace("-", "0"))
         self.dps = int(dps.replace(",", "").replace("-", "0"))
-        self.dividen_yield = float(dividen_yield.replace(",", "").replace("-", "0"))
+        self.dividend_yield = float(dividend_yield.replace(",", "").replace("-", "0"))
     def get_unique_id(self )-> str: return self.date.strftime("%Y-%m-%d") +'-'+ self.isu
     def __str__(self) -> str:
-        return f"""KrxStockBaseValue('date':{self.date},'isu':{self.isu},'name':{self.name},'end_price':{self.end_price},'eps':{self.eps},'per':{self.per},'forward_eps':{self.forward_eps},'forward_per':{self.forward_per},'bps':{self.bps},'pbr':{self.pbr},'dps':{self.dps},'dividen_yield':{self.dividen_yield})"""
+        return f"""KrxStockBaseValue('date':{self.date},'isu':{self.isu},'name':{self.name},'end_price':{self.end_price},'eps':{self.eps},'per':{self.per},'forward_eps':{self.forward_eps},'forward_per':{self.forward_per},'bps':{self.bps},'pbr':{self.pbr},'dps':{self.dps},'dividend_yield':{self.dividend_yield})"""
     def to_dict(self):
-        return {'date' :self.date.strftime("%Y-%m-%d"),'isu' :self.isu,'name' :self.name,'end_price' :self.end_price,'eps' :self.eps,'per' :self.per,'forward_eps' :self.forward_eps,'forward_per' :self.forward_per,'bps' :self.bps,'pbr' :self.pbr,'dps' :self.dps,'dividen_yield' :self.dividen_yield}
+        return {'date' :self.date.strftime("%Y-%m-%d"),'isu' :self.isu,'name' :self.name,'end_price' :self.end_price,'eps' :self.eps,'per' :self.per,'forward_eps' :self.forward_eps,'forward_per' :self.forward_per,'bps' :self.bps,'pbr' :self.pbr,'dps' :self.dps,'dividend_yield' :self.dividend_yield}
 
 class KrxEtfPrice:
     def __init__(self, date, isu, name, end_price, change_price, change_rate, net_value, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, net_cap_value, number_of_share, base_index_name, base_index_end_point, base_index_change_point, base_index_change_rate):

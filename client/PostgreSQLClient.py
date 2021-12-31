@@ -33,7 +33,7 @@ ON CONFLICT (id) DO NOTHING""")
 
     async def save_stock_base_values(rows, conn) -> None:
         cur = conn.cursor()
-        params = [(r.get_unique_id(), r.date, r.isu, r.name, r.end_price, r.eps, r.per, r.forward_eps, r.forward_per, r.bps, r.pbr, r.dps, r.dividen_yield) for r in rows]
-        execute_values(cur, """INSERT INTO "korean_stock_base_value" (id, date, isu, name, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividen_yield) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        params = [(r.get_unique_id(), r.date, r.isu, r.name, r.end_price, r.eps, r.per, r.forward_eps, r.forward_per, r.bps, r.pbr, r.dps, r.dividend_yield) for r in rows]
+        execute_values(cur, """INSERT INTO "korean_stock_base_value" (id, date, isu, name, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividend_yield) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
         cur.close()
         conn.commit()

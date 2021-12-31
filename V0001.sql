@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS "korean_stock_base_value"
     bps                  BIGINT      NOT NULL,
     pbr                  REAL        NOT NULL,
     dps                  BIGINT      NOT NULL,
-    dividen_yield        REAL        NOT NULL,
+    dividend_yield       REAL        NOT NULL,
     updated_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     created_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
