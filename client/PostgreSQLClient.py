@@ -37,3 +37,11 @@ ON CONFLICT (id) DO NOTHING""")
         execute_values(cur, """INSERT INTO "korean_stock_base_value" (id, date, isu, name, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividend_yield) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
         cur.close()
         conn.commit()
+
+    async def save_stock_base_value_avg(rows, conn) -> None:
+        cur = conn.cursor()
+        execute_values(cur, """
+        INSERT INTO "korean_stock_base_value" (id, date, name, isu, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividend_yield) 
+        VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        cur.close()
+        conn.commit()
