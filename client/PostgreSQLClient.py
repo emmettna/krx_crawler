@@ -43,7 +43,6 @@ ON CONFLICT (id) DO NOTHING""")
         cur = conn.cursor()
         today_str = today.strftime("%Y-%m-%d")
         ten_years_ago_str = (today - relativedelta(years=10)).strftime("%Y-%m-%d")
-        print(ten_years_ago_str)
         cur.execute(f"""
         INSERT INTO "korean_stock_base_value_average" (id, date, name, isu, per, pbr, bps, dividend_yield, eps) 
             WITH avg_table AS(
