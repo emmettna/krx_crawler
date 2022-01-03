@@ -61,7 +61,7 @@ def main():
     
     target_date = today
     limit = None
-    print(args)
+    
     if args.target_date != None:
         target_date = datetime.datetime.fromisoformat(args.target_date).date()
     elif args.start_date is not None:
@@ -82,10 +82,11 @@ def main():
         if (pg_client != None): await asyncio.create_task(pg_client.save_stock(stock_rows, pg_conn))
         if (es_client != None): await asyncio.create_task(ElasticSearch.save(stock_rows, 'stock', es_client))
         if (local_storage): await asyncio.create_task(save(stock_rows, local_download_parent_dir + '/stock'))
-        if(firestore_client != None): await asyncio.create_task(Firestore.upload_to_firestore(stock_rows, today, firestore_client))
+        # if(firestore_client != None): await asyncio.create_task(Firestore.upload_to_firestore(stock_rows, today, firestore_client))
         
         stock_base_values_rows = download_stock_base_values(today)
         if (pg_client != None): await asyncio.create_task(pg_client.save_stock_base_values(stock_base_values_rows, pg_conn))
+        if (pg_client != None): await asyncio.create_task(pg_client.save_stock_base_value_avg(pg_conn, today))
         if (es_client != None): await asyncio.create_task(ElasticSearch.save(stock_base_values_rows, 'stock_values', es_client))
         if (local_storage): await asyncio.create_task(save(stock_base_values_rows, local_download_parent_dir + '/stock_values'))
 

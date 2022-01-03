@@ -1,5 +1,6 @@
 from model.KrxPriceModel import *
 import psycopg2
+from dateutil.relativedelta import relativedelta
 from psycopg2.extras import execute_values
 
 class PostgreSQL:
@@ -38,10 +39,17 @@ ON CONFLICT (id) DO NOTHING""")
         cur.close()
         conn.commit()
 
-    async def save_stock_base_value_avg(rows, conn) -> None:
+    async def save_stock_base_value_avg(conn, today) -> None:
         cur = conn.cursor()
-        execute_values(cur, """
-        INSERT INTO "korean_stock_base_value" (id, date, name, isu, end_price, eps, per, forward_eps, forward_per, bps, pbr, dps, dividend_yield) 
-        VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        today_str = today.strftime("%Y-%m-%d")
+        ten_years_ago_str = (today - relativedelta(years=10)).strftime("%Y-%m-%d")
+        print(ten_years_ago_str)
+        cur.execute(f"""
+        INSERT INTO "korean_stock_base_value_average" (id, date, name, isu, per, pbr, bps, dividend_yield, eps) 
+            WITH avg_table AS(
+                SELECT '{today_str}'::DATE, isu, AVG(per) AS per, AVG(pbr) AS pbr, AVG(bps) as bps, AVG(dividend_yield) AS dividend_yield, AVG(eps) AS eps FROM korean_stock_base_value 
+                WHERE date > '{ten_years_ago_str}' AND date <= '{today_str}' GROUP BY isu)
+            SELECT date || '-' || isu AS id, date, (select name from korean_stock_base_value where isu = avg_table.isu limit 1), isu, per, pbr, bps,dividend_yield, eps FROM avg_table
+        ON CONFLICT (id) DO NOTHING""")
         cur.close()
         conn.commit()
