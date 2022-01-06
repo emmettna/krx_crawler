@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS "korean_stock_base_value_average"
     bps             BIGINT,
     dividend_yield  REAL,
     eps             BIGINT,
+    dps             BIGINT,
     updated_at      TIMESTAMP DEFAULT NOW() NOT NULL,
     created_at      TIMESTAMP DEFAULT NOW() NOT NULL
 );
