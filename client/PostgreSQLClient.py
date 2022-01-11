@@ -48,7 +48,7 @@ ON CONFLICT (id) DO NOTHING""")
             WITH avg_table AS(
                 SELECT '{today_str}'::DATE, isu, AVG(per) AS per, AVG(pbr) AS pbr, AVG(bps) as bps, AVG(dividend_yield) AS dividend_yield, AVG(eps) AS eps, AVG(dps) as dps FROM korean_stock_base_value 
                 WHERE date > '{ten_years_ago_str}' AND date <= '{today_str}' GROUP BY isu)
-            SELECT date || '-' || isu AS id, date, (select name from korean_stock_base_value where isu = avg_table.isu limit 1), isu, per, pbr, bps,dividend_yield, eps, dps FROM avg_table
+            SELECT date || '-' || isu AS id, date, (select name from korean_stock_base_value where isu = avg_table.isu limit 1), isu, per, pbr, bps, dividend_yield, eps, dps FROM avg_table
         ON CONFLICT (id) DO NOTHING""")
         cur.close()
         conn.commit()
