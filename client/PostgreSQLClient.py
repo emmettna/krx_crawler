@@ -52,3 +52,36 @@ ON CONFLICT (id) DO NOTHING""")
         ON CONFLICT (id) DO NOTHING""")
         cur.close()
         conn.commit()
+
+    async def upsert_under_valued_assets_to_cache(conn, target_date) -> None:
+        # id, date, isu, name, end_price, current_per, current_pbr, current_dividend_yield, average_per, average_pbr, average_dividend_yield, average_values_price, discount_rate
+        cur = conn.cursor()
+        target_date_str = target_date.strftime("%Y-%m-%d")
+        cur.execute(f"""
+        INSERT INTO "korean_stock_undervalued_cache" (id, date, isu, name, end_price, current_per, current_pbr, current_dividend_yield, average_per, average_pbr, average_dividend_yield, average_values_price, discount_rate) 
+            WITH korean_stock_value_merged AS(
+                    SELECT t1.isu, t2.name, t2.date, t2.end_price, t1.per AS avg_per, t2.per AS cur_per,
+                    CASE WHEN t2.per != 0 then t1.per * t2.eps else NULL end AS avg_per_price,
+                    t1.pbr as avg_pbr, t2.pbr as cur_pbr,
+                    CASE WHEN t2.pbr != 0 then t1.pbr * t2.bps else NULL end AS avg_pbr_price,
+                    t1.dividend_yield as avg_dividendYield, t2.dividend_yield AS cur_dividend_yield,
+                    CASE WHEN t2.dividend_yield != 0 then t2.dps * 100 / t1.dividend_yield else NULL END AS avg_dividend_yield_price
+                    FROM korean_stock_base_value_average AS t1
+                    LEFT JOIN korean_stock_base_value AS t2 ON t1.id = t2.id
+                LEFT JOIN korean_stock AS t3 on t1.id = t3.id
+                    WHERE t3.market_cap > 100000000000 AND t3.end_price >= 1000),
+                result_table AS(SELECT date, isu, name, end_price,
+                    cur_per,
+                    cur_pbr,
+                    cur_dividend_yield,
+                    avg_per_price,
+                    avg_pbr_price,
+                    avg_dividend_yield_price,
+                    (select avg(a1) avg_price from (values (avg_dividend_yield_price), (avg_per_price), (avg_pbr_price)) as anonymous (a1) where a1 != 0)::NUMERIC(10, 2) as average_values_price,
+                    ((select avg(a1) avg_price from (values (avg_dividend_yield_price), (avg_per_price), (avg_pbr_price)) as anonymous (a1) where a1 != 0)::NUMERIC(10, 2) - end_price) / end_price as discount_rate
+                    FROM korean_stock_value_merged ORDER BY discount_rate DESC)
+                SELECT date || '-' || isu, date, isu, name, end_price, cur_per, cur_pbr, cur_dividend_yield, avg_per_price, avg_pbr_price, avg_dividend_yield_price, average_values_price, discount_rate
+                FROM result_table WHERE discount_rate IS NOT NULL AND date = (SELECT date FROM korean_stock_base_value_average GROUP BY date ORDER BY date DESC LIMIT 1)
+        ON CONFLICT (id) DO NOTHING""")
+        cur.close()
+        conn.commit()

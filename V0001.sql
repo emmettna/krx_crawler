@@ -55,6 +55,25 @@ CREATE TABLE IF NOT EXISTS "korean_stock_base_value_average"
     created_at      TIMESTAMP DEFAULT NOW() NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS "korean_stock_undervalued_cache"
+(
+    id                     TEXT                    PRIMARY KEY,
+    date                   DATE                    NOT NULL,
+    isu                    TEXT                    NOT NULL,
+    name                   TEXT                    NOT NULL,
+    end_price              BIGINT, 
+    current_per            BIGINT, 
+    current_pbr            BIGINT, 
+    current_dividend_yield BIGINT, 
+    average_per            BIGINT, 
+    average_pbr            BIGINT, 
+    average_dividend_yield BIGINT, 
+    average_values_price   BIGINT, 
+    discount_rate          BIGINT,
+    updated_at             TIMESTAMP DEFAULT NOW() NOT NULL,
+    created_at             TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "korean_etf"
 (
     id                      TEXT        PRIMARY KEY,

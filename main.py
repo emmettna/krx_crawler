@@ -87,6 +87,7 @@ def main():
         stock_base_values_rows = download_stock_base_values(today)
         if (pg_client != None): await asyncio.create_task(pg_client.save_stock_base_values(stock_base_values_rows, pg_conn))
         if (pg_client != None): await asyncio.create_task(pg_client.save_stock_base_value_avg(pg_conn, today))
+        if (pg_client != None): await asyncio.create_task(pg_client.upsert_under_valued_assets_to_cache(pg_conn, today))
         if (es_client != None): await asyncio.create_task(ElasticSearch.save(stock_base_values_rows, 'stock_values', es_client))
         if (local_storage): await asyncio.create_task(save(stock_base_values_rows, local_download_parent_dir + '/stock_values'))
 
