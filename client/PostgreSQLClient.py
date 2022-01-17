@@ -80,8 +80,18 @@ ON CONFLICT (id) DO NOTHING""")
                 (select avg(a1) avg_price from (values (avg_dividend_yield_price), (avg_per_price), (avg_pbr_price)) as anonymous (a1) where a1 != 0)::NUMERIC(10, 2) as average_values_price,
                 ((select avg(a1) avg_price from (values (avg_dividend_yield_price), (avg_per_price), (avg_pbr_price)) as anonymous (a1) where a1 != 0)::NUMERIC(10, 2) - end_price) / end_price as discount_rate
                 FROM korean_stock_value_merged ORDER BY discount_rate DESC)
-            SELECT date || '-' || isu, date, isu, name, end_price, cur_per, cur_pbr, cur_dividend_yield, avg_per_price, avg_pbr_price, avg_dividend_yield_price, average_values_price, discount_rate
+            SELECT date || '-' || isu as id, date, isu, name, end_price, cur_per, cur_pbr, cur_dividend_yield, avg_per_price, avg_pbr_price, avg_dividend_yield_price, average_values_price, discount_rate
             FROM result_table WHERE discount_rate IS NOT NULL AND date = '{target_date_str}'
-        ON CONFLICT (id) DO NOTHING""")
+        ON CONFLICT (id) DO UPDATE SET 
+            name = EXCLUDED.name,
+            end_price = EXCLUDED.end_price,
+            cur_per = EXCLUDED.cur_per, 
+            cur_pbr = EXCLUDED.cur_pbr, 
+            cur_dividend_yield = EXCLUDED.cur_dividend_yield, 
+            avg_per_price = EXCLUDED.avg_per_price, 
+            avg_pbr_price = EXCLUDED.avg_pbr_price, 
+            avg_dividend_yield_price = EXCLUDED.avg_dividend_yield_price, 
+            average_values_price = EXCLUDED.average_values_price, 
+            discount_rate = EXCLUDED.discount_rate""")
         cur.close()
         conn.commit()
