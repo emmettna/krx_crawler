@@ -85,12 +85,12 @@ ON CONFLICT (id) DO NOTHING""")
         ON CONFLICT (id) DO UPDATE SET 
             name = EXCLUDED.name,
             end_price = EXCLUDED.end_price,
-            cur_per = EXCLUDED.cur_per, 
-            cur_pbr = EXCLUDED.cur_pbr, 
-            cur_dividend_yield = EXCLUDED.cur_dividend_yield, 
-            avg_per_price = EXCLUDED.avg_per_price, 
-            avg_pbr_price = EXCLUDED.avg_pbr_price, 
-            avg_dividend_yield_price = EXCLUDED.avg_dividend_yield_price, 
+            current_per = EXCLUDED.current_per, 
+            current_pbr = EXCLUDED.current_pbr, 
+            current_dividend_yield = EXCLUDED.current_dividend_yield, 
+            average_per = EXCLUDED.average_per, 
+            average_pbr = EXCLUDED.average_pbr, 
+            average_dividend_yield = EXCLUDED.average_dividend_yield, 
             average_values_price = EXCLUDED.average_values_price, 
             discount_rate = EXCLUDED.discount_rate""")
         cur.close()
