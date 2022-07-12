@@ -53,6 +53,51 @@ ON CONFLICT (id) DO NOTHING""")
         cur.close()
         conn.commit()
 
+    async def save_stock_load_history(rows, conn) -> None:
+        cur = conn.cursor()
+        params = [(r.get_unique_id(), r.date, r.name, r.market, r.code, r.traded_volume, r.returned_volume, r.left_stock_volume, r.left_stock_price) for r in rows]
+        execute_values(cur, """INSERT INTO "korean_stock_loan_history" (id, date, name, market, code, traded_volume, returned_volume, left_stock_volume, left_stock_price) VALUES %s ON CONFLICT (id) DO UPDATE SET
+        traded_volume = EXCLUDED.traded_volume, returned_volume = EXCLUDED.returned_volume, left_stock_volume = EXCLUDED.left_stock_volume, left_stock_price = EXCLUDED.left_stock_price""", params)
+        cur.close()
+        conn.commit()
+
+    async def save_market_capital_flow(rows, conn) -> None:
+        cur = conn.cursor()
+        params = [(r.get_unique_id(), r.date, r.deposit, r.deriviation_deposit, r.RP, r.entrust_outstanding, r.entrust_liquidation_outstanding, r.liquidation_rate) for r in rows]
+        execute_values(cur, """INSERT INTO "korean_market_capital_flow" (id, date, deposit, deriviation_deposit, RP, entrust_outstanding, entrust_liquidation_outstanding, liquidation_rate) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        cur.close()
+        conn.commit()
+        
+    async def save_korea_treasury_bond_history(rows, conn) -> None:
+        cur = conn.cursor()
+        params = [(r.get_unique_id(), r.date, r.name, r.period, r.morning_rate, r.afternoon_rate, r.change_rate, r.previous_day_rate, r.highest_of_year_rate, r.lowest_of_year_rate) for r in rows]
+        execute_values(cur, """INSERT INTO "korean_treasury_bill_history" (id, date, name, period, morning_rate, afternoon_rate, change_rate, previous_day_rate, highest_of_year_rate, lowest_of_year_rate) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        rowcount = cur.rowcount
+        print(str(rowcount) + " rows added out of " + str(len(rows)))
+        cur.close()
+        conn.commit()
+
+    async def save_comodity(rows, conn) -> None:
+        cur = conn.cursor()
+        params = [(r.get_unique_id(), r.date, r.name, r.symbol, r.open, r.volume, r.high, r.close, r.low) for r in rows]
+        execute_values(cur, """INSERT INTO "comodity_asset" (id, date, name, symbol, open, volume, high, close, low) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        cur.close()
+        conn.commit()
+
+    async def save_index(rows, conn) -> None:
+        cur = conn.cursor()
+        params = [(r.get_unique_id(), r.date, r.name, r.symbol, r.open, r.volume, r.high, r.close, r.low) for r in rows]
+        execute_values(cur, """INSERT INTO "index" (id, date, name, symbol, open, volume, high, close, low) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        cur.close()
+        conn.commit()
+
+    async def save_currency(rows, conn) -> None:
+        cur = conn.cursor()
+        params = [(r.get_unique_id(), r.date, r.name, r.symbol, r.open, r.volume, r.high, r.close, r.low) for r in rows]
+        execute_values(cur, """INSERT INTO "currency" (id, date, name, symbol, open, volume, high, close, low) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        cur.close()
+        conn.commit()
+
     async def upsert_under_valued_assets_to_cache(conn, target_date) -> None:
         # id, date, isu, name, end_price, current_per, current_pbr, current_dividend_yield, average_per, average_pbr, average_dividend_yield, average_values_price, discount_rate
         cur = conn.cursor()

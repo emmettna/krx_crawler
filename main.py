@@ -7,6 +7,7 @@ from client.PostgreSQLClient import *
 from client.FirestoreClient import * 
 from client.LocalStorageClient import *
 from Crawler import *
+from YahooFinanceCrawler import download_commodity, download_index, download_currency
 import configparser
 import argparse
 
@@ -82,20 +83,43 @@ def main():
         if (pg_client != None): await asyncio.create_task(pg_client.save_stock(stock_rows, pg_conn))
         if (es_client != None): await asyncio.create_task(ElasticSearch.save(stock_rows, 'stock', es_client))
         if (local_storage): await asyncio.create_task(save(stock_rows, local_download_parent_dir + '/stock'))
-        if(firestore_client != None): await asyncio.create_task(Firestore.upload_to_firestore(stock_rows, today, firestore_client))
-        
+        # if(firestore_client != None): await asyncio.create_task(Firestore.upload_to_firestore(stock_rows, today, firestore_client))
         stock_base_values_rows = download_stock_base_values(today)
         if(sum((row.end_price for row in stock_base_values_rows)) > 0):
             if (pg_client != None): await asyncio.create_task(pg_client.save_stock_base_values(stock_base_values_rows, pg_conn))
             if (pg_client != None): await asyncio.create_task(pg_client.save_stock_base_value_avg(pg_conn, today))
-            if (pg_client != None): await asyncio.create_task(pg_client.upsert_under_valued_assets_to_cache(pg_conn, today))
+            # if (pg_client != None): await asyncio.create_task(pg_client.upsert_under_valued_assets_to_cache(pg_conn, today))
             if (es_client != None): await asyncio.create_task(ElasticSearch.save(stock_base_values_rows, 'stock_values', es_client))
             if (local_storage): await asyncio.create_task(save(stock_base_values_rows, local_download_parent_dir + '/stock_values'))
-
         etf_rows = download_etf(today)
         if(pg_client != None): await asyncio.create_task(pg_client.save_eft(etf_rows, pg_conn))
         if(es_client != None): await asyncio.create_task(ElasticSearch.save(etf_rows, 'etf', es_client))
         if(local_storage): await asyncio.create_task(save(etf_rows, local_download_parent_dir + '/etf'))
+        
+        stock_loans_rows = download_stock_loans(today)
+        if(pg_client != None): await asyncio.create_task(pg_client.save_stock_load_history(stock_loans_rows, pg_conn))
+        if(local_storage): await asyncio.create_task(save(stock_loans_rows, local_download_parent_dir + '/stock_loan'))
+
+        # Previous day only
+        market_capital_flow_rows = download_market_capital_flow(today + datetime.timedelta(days=-1))
+        if(pg_client != None): await asyncio.create_task(pg_client.save_market_capital_flow(market_capital_flow_rows, pg_conn))
+        if(local_storage): await asyncio.create_task(save(market_capital_flow_rows, local_download_parent_dir + '/market_capital_flow'))
+
+        korea_treasury_bond_history_rows = download_korea_treasury_bond_history(today)
+        if(pg_client != None): await asyncio.create_task(pg_client.save_korea_treasury_bond_history(korea_treasury_bond_history_rows, pg_conn))
+        if(local_storage): await asyncio.create_task(save(korea_treasury_bond_history_rows, local_download_parent_dir + '/korea_treasury_bond_history'))
+
+        comodity_rows = download_commodity(today)
+        if(pg_client != None): await asyncio.create_task(pg_client.save_comodity(comodity_rows, pg_conn))
+        if(local_storage): await asyncio.create_task(save(comodity_rows, local_download_parent_dir + '/comodity'))
+
+        index_rows = download_index(today)
+        if(pg_client != None): await asyncio.create_task(pg_client.save_index(index_rows, pg_conn))
+        if(local_storage): await asyncio.create_task(save(index_rows, local_download_parent_dir + '/index'))
+
+        currency_rows = download_currency(today)
+        if(pg_client != None): await asyncio.create_task(pg_client.save_currency(currency_rows, pg_conn))
+        if(local_storage): await asyncio.create_task(save(currency_rows, local_download_parent_dir + '/currency'))
 
     try:
         if limit != None:

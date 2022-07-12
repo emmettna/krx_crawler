@@ -99,3 +99,93 @@ CREATE TABLE IF NOT EXISTS "korean_etf"
     updated_at              TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     created_at              TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS "korean_stock_loan_history"
+(
+    id                     TEXT                    PRIMARY KEY,
+    date                   DATE                    NOT NULL,
+    name                   TEXT                    NOT NULL,
+    market                 TEXT, 
+    code                   TEXT, 
+    traded_volume          DECIMAL, 
+    returned_volume        DECIMAL, 
+    left_stock_volume      DECIMAL, 
+    left_stock_price       DECIMAL,
+    updated_at             TIMESTAMP DEFAULT NOW() NOT NULL,
+    created_at             TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "korean_market_capital_flow"
+(
+    id                               TEXT                    PRIMARY KEY,
+    date                             DATE                    NOT NULL,
+    deposit                          DECIMAL                 NOT NULL,
+    deriviation_deposit              DECIMAL                 NOT NULL,
+    RP                               DECIMAL, 
+    entrust_outstanding              DECIMAL, 
+    entrust_liquidation_outstanding  DECIMAL, 
+    liquidation_rate                 DECIMAL, 
+    updated_at                       TIMESTAMP DEFAULT NOW() NOT NULL,
+    created_at                       TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "korean_treasury_bill_history"
+(
+    id                     TEXT                    PRIMARY KEY,
+    date                   DATE                    NOT NULL,
+    name                   TEXT                    NOT NULL,
+    period                 TEXT                    NOT NULL,
+    morning_rate           DECIMAL, 
+    afternoon_rate         DECIMAL, 
+    change_rate            DECIMAL, 
+    previous_day_rate      DECIMAL, 
+    highest_of_year_rate   DECIMAL, 
+    lowest_of_year_rate    DECIMAL, 
+    updated_at             TIMESTAMP DEFAULT NOW() NOT NULL,
+    created_at             TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "comodity_asset"
+(
+    id                     TEXT                    PRIMARY KEY,
+    date                   DATE                    NOT NULL,
+    name                   TEXT                    NOT NULL,
+    symbol                 TEXT                    NOT NULL,
+    open                   DECIMAL                 NOT NULL,
+    volume                 DECIMAL, 
+    high                   DECIMAL, 
+    close                  DECIMAL, 
+    low                    DECIMAL, 
+    updated_at             TIMESTAMP DEFAULT NOW() NOT NULL,
+    created_at             TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "index"
+(
+    id                     TEXT                    PRIMARY KEY,
+    date                   DATE                    NOT NULL,
+    name                   TEXT                    NOT NULL,
+    symbol                 TEXT                    NOT NULL,
+    open                   DECIMAL                 NOT NULL,
+    volume                 DECIMAL, 
+    high                   DECIMAL, 
+    close                  DECIMAL, 
+    low                    DECIMAL, 
+    updated_at             TIMESTAMP DEFAULT NOW() NOT NULL,
+    created_at             TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "currency"
+(
+    id                     TEXT                    PRIMARY KEY,
+    date                   DATE                    NOT NULL,
+    name                   TEXT                    NOT NULL,
+    symbol                 TEXT                    NOT NULL,
+    open                   DECIMAL                 NOT NULL,
+    volume                 DECIMAL, 
+    high                   DECIMAL, 
+    close                  DECIMAL, 
+    low                    DECIMAL, 
+    updated_at             TIMESTAMP DEFAULT NOW() NOT NULL,
+    created_at             TIMESTAMP DEFAULT NOW() NOT NULL
+);
