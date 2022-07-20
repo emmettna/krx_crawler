@@ -54,10 +54,12 @@ def download_asset(target_date: datetime.date, name, symbol) -> list:
         "Safari/537.36"
         )})
             result = req.json()['chart']['result'][0]
-            temp_list = []
-            for (timestamp, low, open, volume, high, close) in zip(result['timestamp'], result['indicators']['quote'][0]['low'], result['indicators']['quote'][0]['open'], result['indicators']['quote'][0]['volume'], result['indicators']['quote'][0]['high'], result['indicators']['quote'][0]['close']):
-                temp_list.append(YahooFinanceRow(timestamp, name, result['meta']['symbol'], low, open, volume, high, close))
-            return temp_list
+            if(str(result['indicators']['quote']) != '[{}]'):
+                temp_list = []
+                for (timestamp, low, open, volume, high, close) in zip(result['timestamp'], result['indicators']['quote'][0]['low'], result['indicators']['quote'][0]['open'], result['indicators']['quote'][0]['volume'], result['indicators']['quote'][0]['high'], result['indicators']['quote'][0]['close']):
+                    temp_list.append(YahooFinanceRow(timestamp, name, result['meta']['symbol'], low, open, volume, high, close))
+                return temp_list
+            return []
         except Exception as e:
             print("Failed to downaload asset name:`{}`, symbol: `{}` ".format(name, symbol))
             print(e)

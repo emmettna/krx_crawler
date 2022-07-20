@@ -71,16 +71,14 @@ ON CONFLICT (id) DO NOTHING""")
     async def save_korea_treasury_bond_history(rows, conn) -> None:
         cur = conn.cursor()
         params = [(r.get_unique_id(), r.date, r.name, r.period, r.morning_rate, r.afternoon_rate, r.change_rate, r.previous_day_rate, r.highest_of_year_rate, r.lowest_of_year_rate) for r in rows]
-        execute_values(cur, """INSERT INTO "korean_treasury_bill_history" (id, date, name, period, morning_rate, afternoon_rate, change_rate, previous_day_rate, highest_of_year_rate, lowest_of_year_rate) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
-        rowcount = cur.rowcount
-        print(str(rowcount) + " rows added out of " + str(len(rows)))
+        execute_values(cur, """INSERT INTO "korean_bonds" (id, date, name, period, morning_rate, afternoon_rate, change_rate, previous_day_rate, highest_of_year_rate, lowest_of_year_rate) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
         cur.close()
         conn.commit()
 
     async def save_comodity(rows, conn) -> None:
         cur = conn.cursor()
         params = [(r.get_unique_id(), r.date, r.name, r.symbol, r.open, r.volume, r.high, r.close, r.low) for r in rows]
-        execute_values(cur, """INSERT INTO "comodity_asset" (id, date, name, symbol, open, volume, high, close, low) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        execute_values(cur, """INSERT INTO "commodity" (id, date, name, symbol, open, volume, high, close, low) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
         cur.close()
         conn.commit()
 
