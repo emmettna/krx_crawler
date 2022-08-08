@@ -81,6 +81,8 @@ def main():
 
         stock_rows = download_stock(today)
         if (pg_client != None): await asyncio.create_task(pg_client.save_stock(stock_rows, pg_conn))
+        if (pg_client != None): await asyncio.create_task(pg_client.save_stock_cahe(stock_rows, pg_conn))
+        if (pg_client != None): await asyncio.create_task(pg_client.save_stock_90days_cache(stock_rows, pg_conn))
         if (es_client != None): await asyncio.create_task(ElasticSearch.save(stock_rows, 'stock', es_client))
         if (local_storage): await asyncio.create_task(save(stock_rows, local_download_parent_dir + '/stock'))
         # if(firestore_client != None): await asyncio.create_task(Firestore.upload_to_firestore(stock_rows, today, firestore_client))

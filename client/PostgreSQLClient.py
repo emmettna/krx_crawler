@@ -21,6 +21,44 @@ VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}','{r.name}','{r.market}','{r.sec
 ON CONFLICT (id) DO NOTHING""")
         conn.commit()
 
+    async def save_stock_cahe(rows, conn):    
+        cur = conn.cursor()
+
+        for r in rows:
+            date = r.date.strftime("%Y-%m-%d")
+            cur.execute(
+f"""INSERT INTO "korean_stock_cache" (isu, date, name, market, sector, end_price, change_price, change_rate, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, number_of_share)
+VALUES ('{r.isu}', '{date}', '{r.name}','{r.market}','{r.sector}',{r.end_price},{r.change_price},{r.change_rate},{r.start_price},{r.highest_price},{r.lowest_price},{r.trade_volume},{r.trade_amount},{r.market_cap},{r.number_of_share})
+ON CONFLICT (isu) DO UPDATE SET
+isu = EXCLUDED.isu,
+date = EXCLUDED.date,
+name = EXCLUDED.name,
+market = EXCLUDED.market,
+sector = EXCLUDED.sector,
+end_price = EXCLUDED.end_price,
+change_price = EXCLUDED.change_price,
+change_rate = EXCLUDED.change_rate,
+start_price = EXCLUDED.start_price,
+highest_price = EXCLUDED.highest_price,
+lowest_price = EXCLUDED.lowest_price,
+trade_volume = EXCLUDED.trade_volume,
+trade_amount = EXCLUDED.trade_amount,
+market_cap = EXCLUDED.market_cap,
+number_of_share = EXCLUDED.number_of_share
+""")
+        conn.commit()
+
+    async def save_stock_90days_cache(rows, conn):    
+        cur = conn.cursor()
+        for r in rows:
+            date = r.date.strftime("%Y-%m-%d")
+            cur.execute(
+f"""INSERT INTO "korean_stock_90days_cache" (id, date, isu, name, market, sector, end_price, change_price, change_rate, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, number_of_share)
+VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}','{r.name}','{r.market}','{r.sector}',{r.end_price},{r.change_price},{r.change_rate},{r.start_price},{r.highest_price},{r.lowest_price},{r.trade_volume},{r.trade_amount},{r.market_cap},{r.number_of_share})
+ON CONFLICT (id) DO NOTHING""")
+        cur.execute("""DELETE FROM korean_stock_90days_cache WHERE "date" > (select "date" from korean_stock_90days_cache group by date order by date desc offset 60 limit 1)""")
+        conn.commit()
+
     async def save_eft(rows, conn):    
         cur = conn.cursor()
 

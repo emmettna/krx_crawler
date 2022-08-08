@@ -20,6 +20,49 @@ CREATE TABLE IF NOT EXISTS "korean_stock"
     created_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS "korean_stock_cache"
+(
+    isu                  TEXT        PRIMARY KEY,
+    date                 DATE        NOT NULL,
+    name                 TEXT        NOT NULL,
+    market               TEXT        NOT NULL,
+    sector               TEXT        ,
+    end_price            BIGINT      NOT NULL,
+    change_price         BIGINT      NOT NULL,
+    change_rate          REAL        NOT NULL,
+    start_price          BIGINT      NOT NULL,
+    highest_price        BIGINT      NOT NULL,
+    lowest_price         BIGINT      NOT NULL,
+    trade_volume         BIGINT      NOT NULL,
+    trade_amount         BIGINT      NOT NULL,
+    market_cap           BIGINT      NOT NULL,
+    number_of_share      BIGINT      NOT NULL,
+    updated_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    created_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "korean_stock_90days_cache"
+(
+    id                   TEXT        PRIMARY KEY,
+    date                 DATE        NOT NULL,
+    isu                  TEXT        NOT NULL,
+    name                 TEXT        NOT NULL,
+    market               TEXT        NOT NULL,
+    sector               TEXT        ,
+    end_price            BIGINT      NOT NULL,
+    change_price         BIGINT      NOT NULL,
+    change_rate          REAL        NOT NULL,
+    start_price          BIGINT      NOT NULL,
+    highest_price        BIGINT      NOT NULL,
+    lowest_price         BIGINT      NOT NULL,
+    trade_volume         BIGINT      NOT NULL,
+    trade_amount         BIGINT      NOT NULL,
+    market_cap           BIGINT      NOT NULL,
+    number_of_share      BIGINT      NOT NULL,
+    updated_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    created_at           TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "korean_stock_base_value"
 (
     id                   TEXT        PRIMARY KEY,
