@@ -15,6 +15,7 @@ snp_ticker = "%5EGSPC?symbol=%5EGSPC"
 nasdaq_ticker = "%5EIXIC?symbol=%5EIXIC"
 kospi_ticker = "%5EKS11?symbol=%5EKS11"
 kosdaq_ticker = "%5EKQ11?symbol=%5EKQ11"
+vix_ticker = "%5EVIX?symbol=%5EVIX"
 
 euro_ticker = "EUR=X?symbol=EUR%3DX"
 cad_ticker = "CAD=X?symbol=CAD%3DX"
@@ -24,8 +25,6 @@ def download_commodity(target_date: datetime.datetime) -> list:
     gold_rows = download_asset(target_date, "Gold", gold_symbol)
     copper_rows = download_asset(target_date, "Copper", copper_symbol)
     wti_rows = download_asset(target_date, "Crude Oil WTI", WTI_symbol)
-    # snp_rows = download_asset(target_date, "S&P", snp_ticker)
-    # nasdaq_rows = []
     return gold_rows + wti_rows + copper_rows
 
 def download_index(target_date: datetime.date) -> list:
@@ -33,7 +32,8 @@ def download_index(target_date: datetime.date) -> list:
     nasdaq_rows = download_asset(target_date, "Nasdaq", nasdaq_ticker)
     kospi_rows = download_asset(target_date, "Kospi", kospi_ticker)
     kosdaq_rows = download_asset(target_date, "Kosdaq", kosdaq_ticker)
-    return snp_rows + nasdaq_rows + kospi_rows + kosdaq_rows
+    vix_rows = download_asset(target_date, "Vix", vix_ticker)
+    return snp_rows + nasdaq_rows + kospi_rows + kosdaq_rows + vix_rows
 
 def download_currency(target_date: datetime.date) -> list:
     euro_rows = download_asset(target_date, "USD/EURO", euro_ticker)
@@ -46,6 +46,7 @@ def download_asset(target_date: datetime.date, name, symbol) -> list:
         target_date = datetime.datetime.combine(target_date, datetime.datetime.min.time())
         start_date_timestamp = target_date.timestamp()
         end_date_timestamp = (target_date + datetime.timedelta(days=1)).timestamp() - 1
+        print(end_date_timestamp)
         try:
             req = requests.get(base_url(symbol, start_date_timestamp, end_date_timestamp), headers={'User-Agent': "".join(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "

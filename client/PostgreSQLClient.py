@@ -56,7 +56,7 @@ number_of_share = EXCLUDED.number_of_share
 f"""INSERT INTO "korean_stock_90days_cache" (id, date, isu, name, market, sector, end_price, change_price, change_rate, start_price, highest_price, lowest_price, trade_volume, trade_amount, market_cap, number_of_share)
 VALUES ('{date +'-'+r.isu}', '{date}', '{r.isu}','{r.name}','{r.market}','{r.sector}',{r.end_price},{r.change_price},{r.change_rate},{r.start_price},{r.highest_price},{r.lowest_price},{r.trade_volume},{r.trade_amount},{r.market_cap},{r.number_of_share})
 ON CONFLICT (id) DO NOTHING""")
-        cur.execute("""DELETE FROM korean_stock_90days_cache WHERE "date" > (select "date" from korean_stock_90days_cache group by date order by date desc offset 60 limit 1)""")
+        cur.execute("""DELETE FROM korean_stock_90days_cache WHERE "date" < (select "date" from korean_stock_90days_cache group by date order by date desc offset 60 limit 1)""")
         conn.commit()
 
     async def save_eft(rows, conn):    
@@ -123,7 +123,8 @@ ON CONFLICT (id) DO NOTHING""")
     async def save_index(rows, conn) -> None:
         cur = conn.cursor()
         params = [(r.get_unique_id(), r.date, r.name, r.symbol, r.open, r.volume, r.high, r.close, r.low) for r in rows]
-        execute_values(cur, """INSERT INTO "index" (id, date, name, symbol, open, volume, high, close, low) VALUES %s ON CONFLICT (id) DO NOTHING""", params)
+        execute_values(cur, """INSERT INTO "index" (id, date, name, symbol, open, volume, high, close, low) VALUES %s ON CONFLICT (id) DO UPDATE SET
+            open = EXCLUDED.open, volume = EXCLUDED.volume, high = EXCLUDED.high, close = EXCLUDED.close, low = EXCLUDED.low""", params)
         cur.close()
         conn.commit()
 
